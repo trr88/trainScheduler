@@ -1,49 +1,56 @@
-  // Initialize Firebase
-  var config = {
-      apiKey: "AIzaSyAff5NErGzjm7TW45GzgdTH0hikkuiUqLc",
-      authDomain: "trainscheduler-87718.firebaseapp.com",
-      databaseURL: "https://trainscheduler-87718.firebaseio.com",
-      projectId: "trainscheduler-87718",
-      storageBucket: "trainscheduler-87718.appspot.com",
-      messagingSenderId: "382111121977"
-  };
-  firebase.initializeApp(config);
+window.onload = function() {
+    var config = {
+        apiKey: "AIzaSyAff5NErGzjm7TW45GzgdTH0hikkuiUqLc",
+        authDomain: "trainscheduler-87718.firebaseapp.com",
+        databaseURL: "https://trainscheduler-87718.firebaseio.com",
+        projectId: "trainscheduler-87718",
+        storageBucket: "trainscheduler-87718.appspot.com",
+        messagingSenderId: "382111121977"
+    };
+    firebase.initializeApp(config);
 
-  var database = firebase.database();
-
-
-  //Capture Button Click
-  $("#addData").on("click", function() {
-      // Don't refresh the page!
-      event.preventDefault();
-
-      var name = $("#trainName").val().trim();
-      var dest = $("#destination").val().trim();
-      var time = $("#firstTime").val().trim();
-      var freq = $("#frequency").val().trim();
-      var monthsWorked = moment().diff(moment(time), "months");
-      console.log(monthsWorked);
-      var totalBilled = monthsWorked * monthRate;
-      // YOUR TASK!!!
-
-      database.ref().push({
-
-          name: name,
-          dest: dest,
-          time: time,
+    var database = firebase.database();
 
 
-      })
-  });
+    //Capture Button Click
+    $("#addData").on("click", function() {
+        // Don't refresh the page!
+        console.log("cheetoh");
+        event.preventDefault();
 
-  database.ref().on('child_added', function(childSnapshot) {
-              var newRow = $('<tr>');
+        var name = $("#trainName").val().trim();
+        var dest = $("#destination").val().trim();
+        var freq = $("#frequency").val().trim();
+        var firstTimeConverted = moment(name, "HH:mm");
+        var currentTime = moment().format("HH:mm");
+        var freqConvert = moment(freq, "minutes");
+        var timeDiff = moment().diff(moment(firstTimeConverted), "minutes");
+        var timeRemainder = timeDiff % freqConvert;
+        var minutes = freqConvert - timeRemainder;
+        var next = moment().add(minutes, "minutes").format("HH:mm");
 
-              var newName = $('<td>').text(childSnapshot.val().name).appendTo(newRow);
-              var newdest = $('<td>').text(childSnapshot.val().dest).appendTo(newRow);
-              var newStartDate = $('<td>').text(childSnapshot.val().time).appendTo(newRow);
-              var newMonthsWorked = $('<td>').text(childSnapshot.val().monthsWorked).appendTo(newRow);
-              var newMonthRate = $('<td>').text(childSnapshot.val().monthRate).appendTo(newRow);
-              var newTotalBilled = $('<td>').text(childSnapshot.val().totalBilled).appendTo(newRow);
+        console.log("whatever");
+        database.ref().push({
 
-              newRow.appendTo($('#new-data'));
+            name: name,
+            dest: dest,
+            freq: freqConvert,
+            next: next,
+            minutes: minutes,
+
+        })
+    });
+
+    database.ref().on('child_added', function(childSnapshot) {
+        var newRow = $('<div class="row">');
+
+        var newName = $('<div class = "col-md-3">').text(childSnapshot.val().name).appendTo(newRow);
+        var newDest = $('<div class = "col-md-3">').text(childSnapshot.val().dest).appendTo(newRow);
+        var newFreq = $('<div class = "col-md-2">').text(childSnapshot.val().time).appendTo(newRow);
+        var newNext = $('<div class = "col-md-2">').text(childSnapshot.val().next).appendTo(newRow);
+        var newMin = $('<div class = "col-md-2">').text(childSnapshot.val().minutes).appendTo(newRow);
+
+
+        newRow.appendTo($('#new-data'));
+    });
+};
